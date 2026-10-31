@@ -27,8 +27,10 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 cp .env.example .env             # then edit .env
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --reload-dir app
 ```
+
+`--reload-dir app` restarts the server only when the backend code changes. Without it, uvicorn also watches `.venv` and keeps restarting while packages are installed.
 
 Open http://localhost:8000.
 
