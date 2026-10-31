@@ -1,0 +1,8 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-dotenv>=1.0
+
+# Model SDKs: only the one for your LLM_PROVIDER is needed
+openai>=1.50
+anthropic>=0.40
+google-genai>=1.0
