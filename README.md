@@ -4,13 +4,15 @@ A small, clean chatbot prototype: a FastAPI backend that streams replies from Op
 
 ## Features
 
-- Chat UI with streaming replies, a Stop button, and a **New chat** reset
+- Chat UI with streaming replies, a Stop button, and Markdown rendering (code blocks get a copy button)
+- Chat history in a sidebar: multiple conversations, auto-titles, search, rename and delete, grouped by date
+- Copy and regenerate on replies; a collapsible drawer on phones
 - Conversation context: the full history is sent with each turn and trimmed to a budget on the server
 - Configurable system prompt in `system_prompt.txt` (picked up without a restart)
 - One environment variable switches the provider: `openai`, `anthropic`, `gemini`, or `mock`
 - Clear error handling: bad API key, rate limits, timeouts and network failures show a readable message with a Retry button
 - Mock mode, so you can run the app without an API key
-- Chat survives a page refresh (stored in the browser)
+- Chats survive a page refresh (stored in the browser)
 
 ## Quick start
 
@@ -46,6 +48,7 @@ The header shows which provider and model are active. If something is missing, i
 | `LLM_PROVIDER` | `mock` | `openai`, `anthropic`, `gemini` or `mock` |
 | `LLM_MODEL` | per provider | Override the model, e.g. a larger or newer one |
 | `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | | Key for the chosen provider |
+| `ANTHROPIC_WORKSPACE_ID` | | Only for Anthropic keys that aren't scoped to a workspace |
 | `MAX_OUTPUT_TOKENS` | `1024` | Maximum reply length |
 | `REQUEST_TIMEOUT_SECONDS` | `60` | Give up on a slow provider after this |
 | `MAX_HISTORY_CHARS` | `24000` | How much recent conversation is sent to the model |
@@ -62,10 +65,10 @@ Browser (React)  ──POST /api/chat {messages}──▶  FastAPI
                                                  └─ provider.stream()      (app/providers.py)
 ```
 
-- **Stateless backend.** The browser keeps the conversation and sends it with each message. The server validates it, trims it to `MAX_HISTORY_CHARS` (always keeping the latest message and starting on a user turn), adds the system prompt and streams the reply. No database is needed at this stage, and adding one later doesn't change the API.
+- **Stateless backend.** The browser keeps the conversations (in localStorage) and sends it with each message. The server validates it, trims it to `MAX_HISTORY_CHARS` (always keeping the latest message and starting on a user turn), adds the system prompt and streams the reply. No database is needed at this stage, and adding one later doesn't change the API.
 - **Streaming.** Replies arrive as server-sent events: `delta` chunks, then `done` or `error`. Errors that happen mid-stream still reach the UI.
 - **Providers.** Each provider is one small class with the same `stream()` method. Adding another provider means adding one class.
-- **No front-end build step.** React and [htm](https://github.com/developit/htm) load as ES modules, so there's nothing to compile. When the UI grows, the components move into a Vite project as they are.
+- **No front-end build step.** React, [htm](https://github.com/developit/htm), marked and DOMPurify load as ES modules, so there's nothing to compile. Model output is sanitized before it is rendered. When the UI grows, the components move into a Vite project as they are.
 
 ## Project structure
 

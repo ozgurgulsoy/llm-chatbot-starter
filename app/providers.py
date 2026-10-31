@@ -73,7 +73,10 @@ class AnthropicProvider:
             from anthropic import AsyncAnthropic
         except ImportError as e:
             raise ProviderConfigError("The 'anthropic' package is not installed.") from e
-        self.client = AsyncAnthropic(timeout=timeout, max_retries=2)
+        # Keys that aren't scoped to a workspace must name one on every request.
+        workspace = os.getenv("ANTHROPIC_WORKSPACE_ID", "").strip()
+        headers = {"anthropic-workspace-id": workspace} if workspace else None
+        self.client = AsyncAnthropic(timeout=timeout, max_retries=2, default_headers=headers)
         self.model = model
         self.max_output_tokens = max_output_tokens
 
